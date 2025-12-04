@@ -1,44 +1,46 @@
-// main.cpp
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+using namespace std;
 
 int main() {
-    std::ifstream input("input.txt");
-    if (!input) {
-        std::cerr << "Cannot open input.txt – make sure it's in the same folder as the executable\n";
+    ifstream fin("input.txt");
+    if (!fin) {
+        cerr << "Could not open input.txt\n";
         return 1;
     }
 
+    string s;
     long long total = 0;
-    std::string line;
 
-    while (std::getline(input, line)) {
-        if (line.empty()) continue;
+    while (fin >> s) {
+        int n = s.size();
+        vector<int> digits(n);
+        for (int i = 0; i < n; i++)
+            digits[i] = s[i] - '0';
 
-        char bestTens  = '0';   // highest digit seen so far (for the tens place)
-        char bestUnits = '0';   // second-highest digit (for the units place)
+        int best = 0;
 
-        for (char c : line) {
-            if (c < '0' || c > '9') continue;   // skip any unexpected characters
+        // For each position as tens digit,
+        // find the best possible ones digit to the right.
+        for (int i = 0; i < n; i++) {
+            int tens = digits[i];
 
-            if (c > bestTens) {
-                bestUnits = bestTens;   // previous best becomes candidate for units
-                bestTens  = c;
-            } else if (c > bestUnits) {
-                bestUnits = c;
+            // find max digit to the right
+            int maxRight = -1;
+            for (int j = i + 1; j < n; j++)
+                maxRight = max(maxRight, digits[j]);
+
+            if (maxRight >= 0) {
+                int val = tens * 10 + maxRight;
+                best = max(best, val);
             }
         }
 
-        // If the line has less than 2 digits the problem guarantees at least two,
-        // but we guard anyway:
-        if (bestTens == '0') bestTens = line[0];
-        if (bestUnits == '0') bestUnits = bestTens;
-
-        int joltage = 10 * (bestTens - '0') + (bestUnits - '0');
-        total += joltage;
+        total += best;
     }
 
-    std::cout << "Total output joltagee: " << total << '\n';
+    cout << total << "\n";
     return 0;
 }
